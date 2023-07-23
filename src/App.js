@@ -1,55 +1,114 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
-
-import apiService from './apiService'
 import ButtonComp from "./comps/ButtonComp/ButtonComp";
 import CurrencyExchangeComp from "./comps/CurrencyExchangeComp/CurrencyExchangeComp";
 import './normalize.scss';
 import {Form, InputGroup} from "react-bootstrap";
-
-
-
-const from_to = 'btc_eth';
-const amount = '5';
-
+import ButtonsComp from "./comps/ButtonsComp/ButtonsComp";
+import apiService from "./apiService";
 
 const App = () => {
 
+    const [currencyArray, setCurrencyArray] = useState();
+
     const [currencyFrom, setCurrencyFrom] = useState();
     const [currencyTo, setCurrencyTo] = useState();
+    const [exchangeAmountCurrencyFrom, setExchangeAmountCurrencyFrom] = useState();
+    const [exchangeAmountCurrencyTo, setExchangeAmountCurrencyTo] = useState();
+    const [isLoading, setIsLoading] = useState();
+    const [error, setError] = useState();
 
-    const callback1 = () => {
-        apiService.getListOfAvailableCurrencies().then(res => console.log(res));
+    let from_to = '';
+    let minimalExchangeAmount;
+
+    useEffect(() => {
+        console.log('useeffect setCurrencyArray');
+        apiService.getListOfAvailableCurrencies().then(currencyArray => {
+            setCurrencyArray(currencyArray);
+        })
+    }, []);
+
+    useEffect(() => {
+        if (currencyFrom && currencyTo) {
+            apiService.getMinimalExchangeAmount(currencyFrom.ticker + '_' + currencyTo.ticker).then(data => {
+                console.log(data.minAmount);
+                if (!exchangeAmountCurrencyFrom || exchangeAmountCurrencyFrom < data.minAmount) {
+                    setExchangeAmountCurrencyFrom(data.minAmount);
+                }
+            })
+                .catch(e => {
+                setError(e.message);
+            });
+        }
+    }, [currencyFrom, currencyTo]);
+
+    let getEstimateAmountTimeout;
+    useEffect(() => {
+        setError('');
+        console.log('getEstimatedExchangeAmount', currencyFrom && currencyTo);
+
+        if (currencyFrom && currencyTo) {
+            clearTimeout(getEstimateAmountTimeout);
+            console.log('getEstimatedExchangeAmount');
+            getEstimateAmountTimeout = setTimeout(() => {
+
+                apiService.getEstimatedExchangeAmount(currencyFrom.ticker + '_' + currencyTo.ticker, exchangeAmountCurrencyFrom)
+                    .then(data => {
+                        setExchangeAmountCurrencyTo(data.estimatedAmount);
+                        console.log('data.estimatedAmount', data.estimatedAmount);
+                    })
+            }, 1000);
+        }
+
+
+    }, [exchangeAmountCurrencyFrom]);
+
+    const handleExchangeAmountCurrencyFrom = (e) => {
+        setExchangeAmountCurrencyFrom(e.target.value)
     };
-    const callback2 = () => {
-        apiService.getMinimalExchangeAmount(from_to).then(res => console.log(res));
-    };
-    const callback3 = () => {
-        apiService.getEstimatedExchangeAmount(from_to, amount).then(res => console.log(res));
+    const handleExchangeAmountCurrencyTo = (e) => {
+        setExchangeAmountCurrencyTo(e.target.value)
     };
 
-    const buttonArray = [
-        {
-            callback: callback1,
-            label: 'getCurrenciesUrl'
-        },
-        {
-            callback: callback2,
-            label: 'minimalExchangeAmountUrl'
-        },
-        {
-            callback: callback3,
-            label: 'estimatedAmountUrl'
-        },
-    ];
+    const swapCurrencies = () => {
+        setCurrencyFrom(currencyTo);
+        setCurrencyTo(currencyFrom);
+    };
+
+    const createExchange = () => {
+      console.log(currencyFrom.ticker, currencyTo.ticker)
+    };
+
+    const isInputValid = () => {
+        return exchangeAmountCurrencyFrom >= minimalExchangeAmount;
+    };
+
+    const doExchange = () => {
+      if (isInputValid()) {
+          createExchange();
+      } else {
+          setExchangeAmountCurrencyFrom('-');
+          setError('wrong amount!');
+      }
+    };
+
     return <React.StrictMode>
         <h1>Crypto Exchange</h1>
         <h2>Exchange fast and easy</h2>
-        {currencyFrom && currencyTo ? currencyFrom.ticker + '_' + currencyTo.ticker : ''}
+        {from_to}
         <div className="d-flex">
-            <CurrencyExchangeComp setCurrency={setCurrencyFrom} selectedCurrency={currencyFrom}/>
-            <ButtonComp label={'change'} callback={()=>{}}/>
-            <CurrencyExchangeComp setCurrency={setCurrencyTo} selectedCurrency={currencyTo}/>
+            <CurrencyExchangeComp setCurrency={setCurrencyFrom}
+                                  selectedCurrency={currencyFrom}
+                                  setExchangeAmount={handleExchangeAmountCurrencyFrom}
+                                  currencyArray={currencyArray}
+                                  exchangeAmountCurrency={exchangeAmountCurrencyFrom}
+            />
+            <ButtonComp label={'change'} callback={swapCurrencies}/>
+            <CurrencyExchangeComp setCurrency={setCurrencyTo}
+                                  selectedCurrency={currencyTo}
+                                  setExchangeAmount={handleExchangeAmountCurrencyTo}
+                                  exchangeAmountCurrency={exchangeAmountCurrencyTo}
+                                  currencyArray={currencyArray}/>
         </div>
         <Form.Label className='w-100 fs-2 text-center fw-bolder'>Your Ethereum address</Form.Label>
         <div className={'d-flex'}>
@@ -58,9 +117,10 @@ const App = () => {
                 aria-label="Recipient's username"
                 aria-describedby="basic-addon2"
             />
-            <ButtonComp label={'exchange'} callback={()=>{}}/>
+            <ButtonComp label={'exchange'} callback={doExchange}/>
+            {error && <div>{error}</div>}
         </div>
-        {buttonArray.map(dataset => <ButtonComp label={dataset.label} callback={dataset.callback}/>)}
+        {/*<ButtonsComp/>*/}
     </React.StrictMode>
 };
 

@@ -5,84 +5,63 @@ import ButtonComp from "../ButtonComp/ButtonComp";
 import Dropdown from "react-bootstrap/Dropdown";
 import CustomMenu from "../CustomMenu/CustomMenu";
 import SelectCurrencyComp from "../SelectCurrencyComp/SelectCurrencyComp";
+import Loader from "../Loader/Loader";
 
-const CurrencyExchangeComp = ({selectedCurrency, setCurrency}) => {
+const CurrencyExchangeComp = ({selectedCurrency, setCurrency, currencyArray, setExchangeAmount, isInvalid, exchangeAmountCurrency, minimalExchangeAmount}) => {
 
-    // const [selectedCurrency, setSelectedCurrency] = useState();
+    console.log('isInvalid',isInvalid);
+    let hint = '';
+    if (isInvalid && minimalExchangeAmount) {
+        hint = minimalExchangeAmount;
+    }
 
-    const currencyArray = [
-        {
-            name: 'ethirium',
-            ticker: 'ert',
-            image: 'https://content-api.changenow.io/uploads/btc_1_527dc9ec3c.svg'
-        },
-        {
-            name: 'ethirium',
-            ticker: 'ert',
-            image: 'https://content-api.changenow.io/uploads/btc_1_527dc9ec3c.svg'
-        },
-        {
-            name: 'ethirium',
-            ticker: 'ert',
-            image: 'https://content-api.changenow.io/uploads/btc_1_527dc9ec3c.svg'
-        },
-    ];
+    const getValue = () => {
+        // console.log('from getValue', isInvalid, exchangeAmountCurrencyFrom)
+        // if (isInvalid) return '-';
+        if (exchangeAmountCurrency) return exchangeAmountCurrency;
+    };
 
     return <div>
-        {/*<input type="text"/>*/}
-        {/*<Form.Group className="mb-3" controlId="formGroupEmail">*/}
-        {/*    <Form.Label>Email address</Form.Label>*/}
-        {/*    <Form.Control type="email" placeholder="Enter email" />*/}
-        {/*</Form.Group>*/}
         <InputGroup className="mb-3">
-            <Form.Control
-                placeholder="Recipient's username"
-                aria-label="Recipient's username"
-                aria-describedby="basic-addon2"
-            />
-
-            <Dropdown>
-                <Dropdown.Toggle className='d-flex' id="dropdown-basic">
-                    {selectedCurrency ? (
-                        <SelectCurrencyComp
-                            ticker={selectedCurrency.ticker.toUpperCase()}
-                            image={selectedCurrency.image}/>
-                    ) : (
-                        <div>Chose currency</div>
-                    )}
-                </Dropdown.Toggle>
-
-                <Dropdown.Menu>
-                    {currencyArray.map((currency, index) =>
-
-                        <Dropdown.Item eventKey="index">
+                <Form.Control
+                    placeholder=""
+                    aria-label="Recipient's username"
+                    aria-describedby="basic-addon2"
+                    onChange={setExchangeAmount}
+                    value={getValue()}
+                    // isInvalid={isInvalid}
+                />
+                <Dropdown>
+                    <Dropdown.Toggle className='d-flex' id="dropdown-basic">
+                        {selectedCurrency ? (
                             <SelectCurrencyComp
-                                name={currency.name + ' ' + index}
-                                ticker={currency.ticker.toUpperCase()}
-                                image={currency.image}
-                                onClick={() => {
-                                    setCurrency(currency)
-                            }}/></Dropdown.Item>
-                    )}
-                    {/*<Dropdown.Item href="#/action-1">Action</Dropdown.Item>*/}
-                    {/*<ButtonComp/>*/}
-                    {/*<Dropdown.Item href="#/action-2">Another action</Dropdown.Item>*/}
-                    {/*<Dropdown.Item href="#/action-3">Something else</Dropdown.Item>*/}
-                </Dropdown.Menu>
-            </Dropdown>
+                                ticker={selectedCurrency.ticker.toUpperCase()}
+                                image={selectedCurrency.image}/>
+                        ) : (
+                            currencyArray && currencyArray.length > 0 ? (
+                                <div>Chose currency</div>
+                            ) : (
+                                <Loader/>
+                            )
+                        )}
+                    </Dropdown.Toggle>
+
+                    <Dropdown.Menu>
+                        {currencyArray && currencyArray.map((currency, index) =>
+                            <Dropdown.Item key={index + currency.ticker}>
+                                <SelectCurrencyComp
+                                    key={index + currency.ticker}
+                                    name={currency.name + ' ' + index}
+                                    ticker={currency.ticker.toUpperCase()}
+                                    image={currency.image}
+                                    onClick={() => {
+                                        setCurrency(currency)
+                                    }}/></Dropdown.Item>
+                        )}
+                    </Dropdown.Menu>
+                </Dropdown>
 
 
-            {/*<InputGroup.Text id="basic-addon2">@example.com</InputGroup.Text>*/}
-            {/*<Form.Select aria-label="Default select example">*/}
-            {/*    /!*{options}*!/*/}
-            {/*    {options.map(Button => <option>*/}
-            {/*        <h1>wefwf</h1>*/}
-            {/*    </option>)}*/}
-            {/*    /!*<option>Open this select menu</option>*!/*/}
-            {/*    /!*<option value="1">One</option>*!/*/}
-            {/*    /!*<option value="2">Two</option>*!/*/}
-            {/*    /!*<option value="3">Three</option>*!/*/}
-            {/*</Form.Select>*/}
         </InputGroup>
     </div>
 };
