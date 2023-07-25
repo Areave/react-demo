@@ -7,12 +7,10 @@ import './normalize.scss';
 import {Form} from "react-bootstrap";
 import apiService from "./apiService";
 
-
 const fetchTimeout = 1000;
 const errorString = 'This pair is disabled now';
 
 const App = () => {
-
         const [currencyArray, setCurrencyArray] = useState();
         const [currencyFrom, setCurrencyFrom] = useState();
         const [currencyTo, setCurrencyTo] = useState();
@@ -23,6 +21,7 @@ const App = () => {
         const minimalExchangeAmount = useRef(null);
         const getEstimateAmountTimeout = useRef(null);
 
+        // при входе сразу загружаем список валют
         useEffect(() => {
             setIsLoading(true);
             apiService.getListOfAvailableCurrencies().then(currencyArray => {
@@ -35,6 +34,8 @@ const App = () => {
             });
         }, []);
 
+        // после установки обоих валют загружаем минимальное количество для обмена
+        // после загружааем соответствующее количество получаемой валюты
         useEffect(() => {
             if (currencyFrom && currencyTo) {
 
@@ -59,38 +60,40 @@ const App = () => {
             }
         }, [currencyFrom, currencyTo]);
 
+        // при изменении цифры в поле ввода через некоторое время (fetchTimeout) подгружаем обмен
         useEffect(() => {
-                if (+exchangeAmountCurrencyFrom === 0) {
-                    setExchangeAmountCurrencyTo('0');
-                    return;
+            if (+exchangeAmountCurrencyFrom === 0) {
+                setExchangeAmountCurrencyTo('0');
+                return;
+            }
+            if (exchangeAmountCurrencyFrom && exchangeAmountCurrencyFrom !== '-') {
+                if (error) {
+                    setError('');
                 }
-                if (exchangeAmountCurrencyFrom && exchangeAmountCurrencyFrom !== '-') {
-                    if (error) {
-                        setError('');
-                    }
-                    if (currencyFrom && currencyTo) {
-                        clearTimeout(getEstimateAmountTimeout.current);
-                        getEstimateAmountTimeout.current = setTimeout(() => {
-                            setIsLoading(true);
-                            apiService.getEstimatedExchangeAmount(currencyFrom.ticker + '_' + currencyTo.ticker, exchangeAmountCurrencyFrom)
-                                .then(data => {
-                                    setIsLoading(false);
-                                    if (data.estimatedAmount) {
-                                        setExchangeAmountCurrencyTo(data.estimatedAmount);
-                                    } else {
-                                        handleError(data.response.data)
-                                    }
-                                }).catch(error => {
+                if (currencyFrom && currencyTo) {
+                    clearTimeout(getEstimateAmountTimeout.current);
+                    getEstimateAmountTimeout.current = setTimeout(() => {
+                        setIsLoading(true);
+                        apiService.getEstimatedExchangeAmount(currencyFrom.ticker + '_' + currencyTo.ticker, exchangeAmountCurrencyFrom)
+                            .then(data => {
                                 setIsLoading(false);
-                                handleError(error)
-                            });
+                                if (data.estimatedAmount) {
+                                    setExchangeAmountCurrencyTo(data.estimatedAmount);
+                                } else {
+                                    handleError(data.response.data)
+                                }
+                            }).catch(error => {
+                            setIsLoading(false);
+                            handleError(error)
+                        });
 
-                        }, fetchTimeout)
+                    }, fetchTimeout)
 
-                    }
                 }
-            }, [exchangeAmountCurrencyFrom]);
+            }
+        }, [exchangeAmountCurrencyFrom]);
 
+        // обрабатываем вводимые данные чтобы не получать ненужных символов
         const handleExchangeAmountCurrency = (e) => {
             let value = e.target.value;
             const lastChar = value.slice(-1);
@@ -107,16 +110,18 @@ const App = () => {
             setExchangeAmountCurrencyFrom(value);
         };
 
+        // обработка ошибок
         const handleError = (response) => {
-        if (response.message) {
-            setError(response.message);
-        } else if (response.error) {
-            setError(response.error);
-        } else {
-            setError(errorString);
-        }
-    };
+            if (response.message) {
+                setError(response.message);
+            } else if (response.error) {
+                setError(response.error);
+            } else {
+                setError(errorString);
+            }
+        };
 
+        // Кнопка свапа валют
         const swapCurrencies = () => {
             setCurrencyFrom(currencyTo);
             setCurrencyTo(currencyFrom);
@@ -149,7 +154,6 @@ const App = () => {
                                       exchangeAmountCurrency={exchangeAmountCurrencyFrom}
                 />
                 <div className="swap-button">
-                    {/*{isLoading ? <Loader/> : <ButtonComp label={'change'} callback={swapCurrencies}/>}*/}
                     {isLoading ? <Loader/> : <img className='swap-button-img' src={'./swap.png'} onClick={swapCurrencies}/>}
                 </div>
                 <CurrencyExchangeComp setCurrency={setCurrencyTo}
@@ -159,18 +163,14 @@ const App = () => {
                                       exchangeAmountCurrency={exchangeAmountCurrencyTo}/>
             </div>
             <h4 className={'title px-md-3'}>Your Ethereum address</h4>
-            {/*<Form.Label className='w-100 fs-2 text-center fw-bolder'></Form.Label>*/}
             <div className={'wallet_container d-flex flex-col px-md-3 flex-md-row'}>
                 <Form.Control/>
                 <div className="exchange_container">
                     <ButtonComp label={'EXCHANGE'} callback={doExchange}/>
                     {error && <div className='error text-center'>{error}</div>}
-
                 </div>
-
             </div>
         </React.StrictMode>
-    }
-;
+    };
 
 export default App;
