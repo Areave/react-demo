@@ -3,10 +3,10 @@ import Button from 'react-bootstrap/Button';
 import './SelectCurrencyCompStyle.scss'
 
 const SelectCurrencyComp = ({name, ticker, image, onClick}) => {
-    return <div className='d-flex' onClick={onClick}>
-        <img src={image}/>
-        <div>{ticker}</div>
-        <div>{name}</div>
+    return <div className='select_currency d-flex' onClick={onClick}>
+        <img className='select_currency_item img' src={image}/>
+        <div className='select_currency_item ticker text-truncate'>{ticker}</div>
+        <div className='select_currency_item name text-truncate'>{name}</div>
     </div>
 };
 

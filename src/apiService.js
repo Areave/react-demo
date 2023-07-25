@@ -10,10 +10,8 @@ const getListOfAvailableCurrencies = () => axios.get(getListOfAvailableCurrencie
 const getMinimalExchangeAmount = (from_to) => axios.get(`https://api.changenow.io/v1/min-amount/${from_to}?api_key=${apiKey}`)
     .then(data => data.data)
     .catch(error => {
-
         const errorMessage = error.response.data.error;
         const errorMessageString = errorMessage.split('_').join(' ');
-        console.log('error from service', errorMessage);
         throw new Error(errorMessageString);
     });
 

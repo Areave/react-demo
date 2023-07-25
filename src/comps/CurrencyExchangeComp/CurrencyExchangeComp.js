@@ -11,18 +11,16 @@ const CurrencyExchangeComp = ({selectedCurrency,
                                   setExchangeAmount,
                                   exchangeAmountCurrency,
                                   isLoading}) => {
-    return <div>
-        <InputGroup className="mb-3">
+    return <InputGroup className="currency_input px-md-3">
             <Form.Control
                 placeholder=""
                 readOnly={isLoading || !setExchangeAmount}
-                aria-label="Recipient's username"
-                aria-describedby="basic-addon2"
                 onChange={setExchangeAmount}
                 value={exchangeAmountCurrency || ''}
             />
-            <Dropdown>
-                <Dropdown.Toggle className='d-flex' id="dropdown-basic">
+            <Dropdown className='currency_dropdown_container'>
+                <Dropdown.Toggle className='currency_dropdown d-flex' id="dropdown-basic"
+                                 drop={'down-centered'}>
                     {selectedCurrency ? (
                         <SelectCurrencyComp
                             ticker={selectedCurrency.ticker.toUpperCase()}
@@ -36,12 +34,12 @@ const CurrencyExchangeComp = ({selectedCurrency,
                     )}
                 </Dropdown.Toggle>
 
-                <Dropdown.Menu>
+                <Dropdown.Menu className='dropdown-menu-container'>
                     {currencyArray && currencyArray.map((currency, index) =>
-                        <Dropdown.Item key={index + currency.ticker}>
+                        <Dropdown.Item className='currencies_container' key={index + currency.ticker}>
                             <SelectCurrencyComp
                                 key={index + currency.ticker}
-                                name={currency.name + ' ' + index}
+                                name={currency.name}
                                 ticker={currency.ticker.toUpperCase()}
                                 image={currency.image}
                                 onClick={() => {
@@ -51,7 +49,6 @@ const CurrencyExchangeComp = ({selectedCurrency,
                 </Dropdown.Menu>
             </Dropdown>
         </InputGroup>
-    </div>
 };
 
 export default CurrencyExchangeComp;

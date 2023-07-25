@@ -3,7 +3,7 @@ import Button from 'react-bootstrap/Button';
 import './ButtonCompStyle.scss'
 
 const ButtonComp = ({label, callback}) => {
-    return <Button className='button_comp' variant="primary" onClick={callback}>{label}</Button>
+    return <Button className='exchange_button' onClick={callback}>{label}</Button>
 };
 
 export default ButtonComp;
