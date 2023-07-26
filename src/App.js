@@ -26,11 +26,10 @@ const App = () => {
             setIsLoading(true);
             apiService.getListOfAvailableCurrencies().then(currencyArray => {
                 setCurrencyArray(currencyArray);
-                setCurrencyFrom(currencyArray[0]);
-                setCurrencyTo(currencyArray[1]);
             }).catch(error => {
-                setIsLoading(false);
                 handleError(error)
+            }).finally(() => {
+                setIsLoading(false);
             });
         }, []);
 
@@ -38,7 +37,6 @@ const App = () => {
         // после загружааем соответствующее количество получаемой валюты
         useEffect(() => {
             if (currencyFrom && currencyTo) {
-
                 setIsLoading(true);
                 apiService.getMinimalExchangeAmount(currencyFrom.ticker + '_' + currencyTo.ticker).then(data => {
                     minimalExchangeAmount.current = data.minAmount;
@@ -123,8 +121,10 @@ const App = () => {
 
         // Кнопка свапа валют
         const swapCurrencies = () => {
-            setCurrencyFrom(currencyTo);
-            setCurrencyTo(currencyFrom);
+            if (currencyTo && currencyFrom) {
+                setCurrencyFrom(currencyTo);
+                setCurrencyTo(currencyFrom);
+            }
         };
 
         const createExchange = () => {
@@ -154,7 +154,7 @@ const App = () => {
                                       exchangeAmountCurrency={exchangeAmountCurrencyFrom}
                 />
                 <div className="swap-button">
-                    {isLoading ? <Loader/> : <img className='swap-button-img' src={'./swap.png'} onClick={swapCurrencies}/>}
+                    {isLoading ? <Loader/> : <img className='swap-button-img' src={'./assets/swap.png'} onClick={swapCurrencies}/>}
                 </div>
                 <CurrencyExchangeComp setCurrency={setCurrencyTo}
                                       selectedCurrency={currencyTo}

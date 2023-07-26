@@ -1,5 +1,12 @@
 const path = require("path");
 const MiniCss = require('mini-css-extract-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+const htmlWebpackPlugin = new HtmlWebpackPlugin({
+    template: "./src/index.html",
+    filename: "index.html"
+});
 
 module.exports = function (_, webpackEnv) {
     const isDevelopment = webpackEnv.mode === 'development';
@@ -69,6 +76,13 @@ module.exports = function (_, webpackEnv) {
                 }
             ]
         },
-        plugins: [miniCss],
+        plugins: [miniCss, htmlWebpackPlugin, new CopyPlugin({
+            patterns: [{
+                from: 'assets/',
+                to: './assets',
+                context: 'src/',
+                noErrorOnMissing: true
+            }]
+        })],
     }
 }
