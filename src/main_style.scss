@@ -49,6 +49,9 @@
   align-items: center;
   height: 40px;
   width: 200px;
+  &:hover {
+    cursor: pointer;
+  }
   &-img {
     display: block;
     margin:auto;

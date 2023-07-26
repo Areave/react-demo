@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import ButtonComp from "./comps/ButtonComp/ButtonComp";
 import CurrencyExchangeComp from "./comps/CurrencyExchangeComp/CurrencyExchangeComp";
 import Loader from "./comps/Loader/Loader";
-import './normalize.scss';
+import './main_style.scss';
 import {Form} from "react-bootstrap";
 import apiService from "./apiService";
 
